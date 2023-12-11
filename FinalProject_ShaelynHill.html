@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Public Trans. Columbus, OH</title>
+<style>
+    html, body {
+        width: 100%;
+        height: 100%;
+        background-color: black;
+    }
+    #viewDiv {
+        padding: 1px;
+        float: left;
+        left: 0;
+        margin: 0;
+        height: 85%;
+        width: 49.5%;
+    }
+    .titleDiv {
+        float: left;
+        height: 31px;
+        width: 49.5%;
+        background-color: #666;
+        color: white;
+        text-align: center;
+        padding-right: 0.5%;
+        font-weight: 400;
+        font-size: 20px
+    }
+    h2 {
+        text-align: center;
+        color: white;
+        float: right
+    }
+    #header {
+        width: 100%;
+        background-color: black;
+        height: 5%;
+        text-align: center;
+        color: white;
+    }
+    #viewDiv2 {
+        float: right;
+        right: 0;
+        padding: 1px;
+        margin: 0;
+        height: 85%;
+        width: 49.5%;
+    }
+    #extentDiv {
+        border: 2px solid #b00;
+        position: absolute;
+        z-index: 2;
+    }
+</style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/css/main.css">
+<script src="https://js.arcgis.com/4.28/"></script>
+<script>
+    require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/symbols/SimpleFillSymbol",
+        "esri/symbols/SimpleLineSymbol",
+        "esri/widgets/Swipe",
+        "esri/widgets/LayerList",
+        "esri/widgets/Expand",
+    ], function (Map, MapView, FeatureLayer, SimpleFillSymbol, SimpleLineSymbol, Swipe, LayerList, Expand) {
+
+        // portal item ID for census block groups
+        const portalItemId = "6bf07bfdffff405b92fa135e878349a3";
+
+        // Create two different maps
+        var map = new Map({
+            basemap: "topo"
+        });
+
+        var map2 = new Map({
+            basemap: "topo"
+        });
+
+        // Create two map views
+        var view = new MapView({
+            container: "viewDiv",
+            map: map,
+            zoom: 10,
+            center: [-82.9833, 39.9833]
+        });
+
+        var view2 = new MapView({
+            container: "viewDiv2",
+            map: map2,
+            zoom: 10,
+            center: [-82.9833, 39.9833],
+            constraints: {
+                rotationEnabled: false
+            }
+        });
+
+    // Add block groups feature layer to each map
+        var blockGroups1 = new FeatureLayer({
+            portalItem: {
+                id: portalItemId
+            },
+            title: "Franklin Co. Census Blocks",
+            renderer: {
+    type: "class-breaks", //Block Group 1 (Income) Class
+    field: "INCOME",
+    classBreakInfos: [{
+        minValue: 0,
+        maxValue: 23869.000000,
+        symbol: createSymbol("rgba(237, 248, 251, 0.65)"), 
+        label: "$0 - $23,869"
+    }, {
+        minValue: 23869.000001,
+        maxValue: 55050.000000,
+        symbol: createSymbol("rgba(178, 226, 226, 0.65)"), 
+        label: "$23,870 - $55,050"
+    }, {
+        minValue: 55050.000001,
+        maxValue: 87500.000000,
+        symbol: createSymbol("rgba(102, 194, 164, 0.65)"), 
+        label: "$55,051 - $87,500"
+    }, {
+        minValue: 87500.000001,
+        maxValue: 136318.000000,
+        symbol: createSymbol("rgba(44, 162, 95, 0.65)"), 
+        label: "$87,501 - $136,318"
+    }, {
+        minValue: 136318.000001,
+        maxValue: 241250.000000,
+        symbol: createSymbol("rgba(0, 109, 44, 0.65)"),
+        label: "$136,319 - $241,250"
+    }],
+    legendOptions: {
+        title: "Median Income"
+    }
+},
+        popupTemplate: {
+        title: "Income in 2021",
+        content: "The median income was ${INCOME} in this block group."
+    }
+
+        });
+
+        var blockGroups2 = new FeatureLayer({
+            portalItem: {
+                id: portalItemId
+            },
+            title: "Franklin Co. Census Blocks",
+            renderer: {
+        type: "class-breaks", //Block Group 2 (Bus) Class
+        field: "BUS",
+        classBreakInfos: [{
+            minValue: 0,
+            maxValue: 9,
+            symbol: createSymbol("rgba(255, 255, 178, .65)"),
+            label: "0 - 9"
+        }, {
+            minValue: 9.000001,
+            maxValue: 30.000000,
+            symbol: createSymbol("rgba(254, 204, 92, .65)"),
+            label: "14 - 46"
+        }, {
+            minValue: 30.000001,
+            maxValue: 60.000000,
+            symbol: createSymbol("rgba(253, 141, 60, .65)"),
+            label: "30 - 60"
+        }, {
+            minValue: 60.000001,
+            maxValue: 108.000000,
+            symbol: createSymbol("rgba(240, 59, 32, .65)"),
+            label: "94 - 199"
+        }, {
+            minValue: 108.000001,
+            maxValue: 199.000000,
+            symbol: createSymbol("rgba(189, 0, 38, .65)"),
+            label: "94 - 199"   
+        }],
+        legendOptions: {
+            title: "Residents Commuting by Public Bus"
+        }
+    },
+    popupTemplate: {
+        title: "Commuting in 2021",
+        content: "{BUS} residents took a public bus to work in this block group."
+    }
+});
+
+        var blockGroups3 = new FeatureLayer({
+            portalItem: {
+                id: portalItemId
+            },
+            title: "Franklin Co. Census Blocks",
+            renderer: {
+    type: "class-breaks", //Block Group 3 (Drove) Class
+    field: "DROVE",
+    classBreakInfos: [{
+        minValue: 0,
+        maxValue: 316,
+        symbol: createSymbol("rgba(255, 255, 204, 0.65)"), 
+    }, {
+        minValue: 316.000001,
+        maxValue: 540.000000,
+        symbol: createSymbol("rgba(161, 218, 180, 0.65)"), 
+        label: "316 - 540"
+    }, {
+        minValue: 540.000001,
+        maxValue: 804.000000,
+        symbol: createSymbol("rgba(65, 182, 196, 0.65)"), 
+        label: "540 - 804"
+    }, {
+        minValue: 804.000001,
+        maxValue: 1177.000000,
+        symbol: createSymbol("rgba(44, 127, 184, 0.65)"),
+        label: "804 - 1,177"
+    }, {
+        minValue: 1177.000001,
+        maxValue: 1994.000000,
+        symbol: createSymbol("rgba(37, 52, 148, 0.65)"),
+        label: "1,117 - 1,994"   
+    }],
+        legendOptions: {
+        title: "Residents Commuting by Driving Self"
+    }
+},
+popupTemplate: {
+        title: "Commuting in 2021",
+        content: "{DROVE} residents drove themselves to work in this block group."
+    }
+        });
+
+        // add different block groups features to each map
+        map.add(blockGroups1);
+        map2.add(blockGroups2);
+        map2.add(blockGroups3);
+
+        // Add COTA Lines to the first map
+        var cotaLines1 = new FeatureLayer({
+            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Fixed-Route_Lines_Current_view/FeatureServer/0",
+            title: "COTA Bus Routes",
+            renderer: {
+                type: "simple",
+                symbol: createLineSymbol("#BB0000", 1.5)
+            }
+        });
+
+        map.add(cotaLines1);
+
+        // Add COTA Lines to the second map
+        var cotaLines2 = new FeatureLayer({
+            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Fixed-Route_Lines_Current_view/FeatureServer/0",
+            title: "COTA Bus Routes",
+            visible: false,
+            renderer: {
+                type: "simple",
+                symbol: createLineSymbol("#BB0000", 1.5)
+            }
+        });
+        map2.add(cotaLines2);
+
+        //Add COTA stops to both maps
+        var cotaStops = new FeatureLayer({
+            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Stops_Current_(Public)/FeatureServer/0",
+            title: "COTA Bus Stops",
+            visible: false,
+            renderer: {
+                type: "simple",
+                symbol: {
+                    type: "simple-marker",
+                    size: 6,
+                    color: "#BB0000",
+                    outline: {
+                        width: 0.5,
+                        color: "white"
+                    }
+                }
+            }
+        });
+        map.add(cotaStops);
+
+        var cotaStops2 = new FeatureLayer({
+            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Stops_Current_(Public)/FeatureServer/0",
+            title: "COTA Bus Stops",
+            visible: false,
+            renderer: {
+                type: "simple",
+                symbol: {
+                    type: "simple-marker",
+                    size: 6,
+                    color: "#BB0000",
+                    outline: {
+                        width: 0.5,
+                        color: "white"
+                    }
+                }
+            }
+        });
+        map2.add(cotaStops2);
+
+        // create a new Swipe widget
+        const mySwipe = new Swipe({
+          leadingLayers: [blockGroups2],
+          trailingLayers: [blockGroups3],
+          direction: "vertical",
+          position: 20, // set position of widget to 20% of the screen
+          view: view2//Bind the swipe to the view
+        });
+
+        // add the widget to the view
+        view2.ui.add(mySwipe);
+
+        // add a legend/List to first view
+        const legendListExpand = new Expand({
+        //collapsedIconClass: "esri-icon-collection",
+          expandIconClass: "esri-icon-collection",
+          expandTooltip: "Legend",
+          view: view,
+          content: new LayerList({
+            view: view,
+        listItemCreatedFunction: function(event) {
+          const item = event.item;
+          if (item.layer.type != "group") { // don't show legend twice
+            item.panel = {
+              content: "legend",
+              open: true
+            };
+          }
+        }
+          }),
+          expanded: false
+        });
+        view.ui.add(legendListExpand, "top-left");
+
+        // add a legend/List to second view
+          const legendListExpand2 = new Expand({
+        //collapsedIconClass: "esri-icon-collection",
+          expandIconClass: "esri-icon-collection",
+          expandTooltip: "Legend",
+          view: view2,
+          content: new LayerList({
+            view: view2,
+        listItemCreatedFunction: function(event) {
+          const item = event.item;
+          if (item.layer.type != "group") { // don't show legend twice
+            item.panel = {
+              content: "legend",
+              open: true
+            };
+          }
+        }
+          }),
+          expanded: false
+        });
+        view2.ui.add(legendListExpand2, "top-left");
+
+        //sync the two maps when scrolling/zooming/etc
+        const views = [view, view2];
+        let active;
+
+        const sync = (source) => {
+            if (!active || !active.viewpoint || active !== source) {
+                return;
+            }
+
+            for (const view of views) {
+                if (view !== active) {
+                    view.viewpoint = active.viewpoint;
+                }
+            }
+        };
+
+        for (const view of views) {
+            view.watch(["interacting", "animation"], () => {
+                active = view;
+                sync(active);
+            });
+
+            view.watch("viewpoint", () => sync(view));
+        }
+
+        function createSymbol(color) {
+            return new SimpleFillSymbol({
+                color: color,
+                outline: {
+                    color: "white",
+                    width: 0.5
+                }
+            });
+        }
+
+        function createLineSymbol(color, width) {
+            return new SimpleLineSymbol({
+                color: color,
+                width: width
+            });
+        }
+    });
+</script>
+</head>
+<body>
+    <div id="header" style="display: table; height: 15px; overflow: hidden;">
+        <h1 style="vertical-align: middle">Public Transportation in Columbus, OH</h1>
+    </div>
+    <div class="titleDiv">Public Bus Availability & Median Income</div>
+    <div class="titleDiv">Self Drivers vs. Taking Public Bus to Work</div>
+    <div id="viewDiv"></div>
+    <div id="viewDiv2"></div>
+</body>
+</html>
