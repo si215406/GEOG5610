@@ -243,7 +243,7 @@ popupTemplate: {
             title: "COTA Bus Routes",
             renderer: {
                 type: "simple",
-                symbol: createLineSymbol("#00210d", .75)
+                symbol: createLineSymbol("#00210d", 1)
             }
         });
 
@@ -256,7 +256,7 @@ popupTemplate: {
             visible: false,
             renderer: {
                 type: "simple",
-                symbol: createLineSymbol("#6D0041", .75)
+                symbol: createLineSymbol("#00210d", 1)
             }
         });
         map2.add(cotaLines2);
@@ -271,7 +271,7 @@ popupTemplate: {
                 symbol: {
                     type: "simple-marker",
                     size: 5,
-                    color: "#6D0041",
+                    color: "#00210d",
                     outline: {
                         width: 0.5,
                         color: "white"
