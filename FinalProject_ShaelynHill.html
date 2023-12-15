@@ -10,18 +10,71 @@
         height: 100%;
         background-color: black;
     }
+    
+    #mainDiv {
+    display: flex;
+    height: 95%;
+}
+.legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: left; 
+    align-items: left; 
+    border: 1px solid black;
+}
+    #legendDiv {
+    margin: 5px;
+    padding: 5px;
+    background-color: #666; 
+    border: 1px solid black;
+    border-radius: 2px;
+    width: 100%;
+}
+    #leftDiv{
+        flex: 0 0 20%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #centerDiv {
+        flex: 1;
+    }
+
+    #rightDiv {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
     #viewDiv {
         padding: 1px;
         float: left;
         left: 0;
         margin: 0;
-        height: 85%;
-        width: 49.5%;
+        height: 95%;
+        width: 100%;
+    }
+    #viewDiv2 {
+        float: right;
+        right: 0;
+        padding: 1px;
+        margin: 0;
+        height: 47.5%;
+        width: 100%;
+    }
+    #viewDiv3 {
+        float: right;
+        right: 0;
+        padding: 1px;
+        margin: 0;
+        height: 47.5%;
+        width: 100%;
     }
     .titleDiv {
         float: left;
-        height: 31px;
-        width: 49.5%;
+        height: 5%;
+        width: 100%;
         background-color: #666;
         color: white;
         text-align: center;
@@ -37,17 +90,9 @@
     #header {
         width: 100%;
         background-color: black;
-        height: 5%;
+        height: 2%;
         text-align: center;
         color: white;
-    }
-    #viewDiv2 {
-        float: right;
-        right: 0;
-        padding: 1px;
-        margin: 0;
-        height: 85%;
-        width: 49.5%;
     }
     #extentDiv {
         border: 2px solid #b00;
@@ -61,18 +106,17 @@
     require([
         "esri/Map",
         "esri/views/MapView",
+        "esri/Basemap",
         "esri/layers/FeatureLayer",
         "esri/symbols/SimpleFillSymbol",
         "esri/symbols/SimpleLineSymbol",
-        "esri/widgets/Swipe",
         "esri/widgets/LayerList",
-        "esri/widgets/Expand",
-    ], function (Map, MapView, FeatureLayer, SimpleFillSymbol, SimpleLineSymbol, Swipe, LayerList, Expand) {
+    ], function (Map, MapView, Basemap, FeatureLayer, SimpleFillSymbol, SimpleLineSymbol, LayerList) {
 
         // portal item ID for census block groups
         const portalItemId = "6bf07bfdffff405b92fa135e878349a3";
 
-        // Create two different maps
+        // Create three different maps
         var map = new Map({
             basemap: "dark-gray-vector"
         });
@@ -81,7 +125,11 @@
             basemap: "dark-gray-vector"
         });
 
-        // Create two map views
+        var map3 = new Map({
+            basemap: "dark-gray-vector"
+        });
+
+        // Create three map views
         var view = new MapView({
             container: "viewDiv",
             map: map,
@@ -93,10 +141,14 @@
             container: "viewDiv2",
             map: map2,
             zoom: 9,
-            center: [-82.9833, 39.9833],
-            constraints: {
-                rotationEnabled: false
-            }
+            center: [-83.00038, 39.97267]
+        });
+
+        var view3 = new MapView({
+            container: "viewDiv3",
+            map: map3,
+            zoom: 9,
+            center: [-83.00038, 39.97267]
         });
 
     // Add block groups feature layer to each map
@@ -104,7 +156,7 @@
             portalItem: {
                 id: portalItemId
             },
-            title: "Franklin Co. Census Blocks",
+            title: "Block Groups - Median Income",
             renderer: {
     type: "class-breaks", //Block Group 1 (Income) Class
     field: "INCOME",
@@ -149,7 +201,7 @@
             portalItem: {
                 id: portalItemId
             },
-            title: "Franklin Co. Census Blocks",
+            title: "Block Groups  - Public Bus Riders",
             renderer: {
         type: "class-breaks", //Block Group 2 (Bus) Class
         field: "BUS",
@@ -180,7 +232,7 @@
             label: "94 - 199"   
         }],
         legendOptions: {
-            title: "Residents Commuting by Public Bus"
+            title: "# Residents Commuting by Public Bus"
         }
     },
     popupTemplate: {
@@ -193,7 +245,7 @@
             portalItem: {
                 id: portalItemId
             },
-            title: "Franklin Co. Census Blocks",
+            title: "Block Groups - Self Drive Commuters",
             renderer: {
     type: "class-breaks", //Block Group 3 (Drove) Class
     field: "DROVE",
@@ -223,7 +275,7 @@
         label: "1,117 - 1,994"   
     }],
         legendOptions: {
-        title: "Residents Commuting by Driving Self"
+        title: "# Residents Commuting by Driving Self"
     }
 },
 popupTemplate: {
@@ -235,7 +287,7 @@ popupTemplate: {
         // add different block groups features to each map
         map.add(blockGroups1);
         map2.add(blockGroups2);
-        map2.add(blockGroups3);
+        map3.add(blockGroups3);
 
         // Add COTA Lines to the first map
         var cotaLines1 = new FeatureLayer({
@@ -249,19 +301,7 @@ popupTemplate: {
 
         map.add(cotaLines1);
 
-        // Add COTA Lines to the second map
-        var cotaLines2 = new FeatureLayer({
-            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Fixed-Route_Lines_Current_view/FeatureServer/0",
-            title: "COTA Bus Routes",
-            visible: false,
-            renderer: {
-                type: "simple",
-                symbol: createLineSymbol("#00210d", 1)
-            }
-        });
-        map2.add(cotaLines2);
-
-        //Add COTA stops to both maps
+        //Add COTA stops to the first map
         var cotaStops = new FeatureLayer({
             url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Stops_Current_(Public)/FeatureServer/0",
             title: "COTA Bus Stops",
@@ -281,83 +321,42 @@ popupTemplate: {
         });
         map.add(cotaStops);
 
-        var cotaStops2 = new FeatureLayer({
-            url: "https://services6.arcgis.com/PyaYYixu3QuadcCe/arcgis/rest/services/COTA_Stops_Current_(Public)/FeatureServer/0",
-            title: "COTA Bus Stops",
-            visible: false,
-            renderer: {
-                type: "simple",
-                symbol: {
-                    type: "simple-marker",
-                    size: 6,
-                    color: "#BB0000",
-                    outline: {
-                        width: 0.5,
-                        color: "white"
-                    }
-                }
+        // Create legend divs for 3 maps
+
+        const legends = ["legendDiv1", "legendDiv2", "legendDiv3"];
+
+        legends.forEach((legendId) => {
+        const legendDiv = document.createElement("div");
+        legendDiv.id = legendId;
+        legendDiv.classList.add("legend"); // Add this line
+        document.getElementById("leftDiv").appendChild(legendDiv);
+});
+
+        // Function to create a legend for a map
+        function createLegend(mapView, legendDivId) {
+        new LayerList({
+        view: mapView,
+        container: legendDivId,
+        listItemCreatedFunction: function(event) {
+            const item = event.item;
+            if (item.layer.type != "group") {
+                item.panel = {
+                    content: "legend",
+                    open: true
+                };
             }
-        });
-        map2.add(cotaStops2);
-
-        // create a new Swipe widget
-        const mySwipe = new Swipe({
-          leadingLayers: [blockGroups2],
-          trailingLayers: [blockGroups3],
-          direction: "vertical",
-          position: 20, // set position of widget to 20% of the screen
-          view: view2//Bind the swipe to the view
-        });
-
-        // add the widget to the view
-        view2.ui.add(mySwipe);
-
-        // add a legend/List to first view
-        const legendListExpand = new Expand({
-        //collapsedIconClass: "esri-icon-collection",
-          expandIconClass: "esri-icon-collection",
-          expandTooltip: "Legend",
-          view: view,
-          content: new LayerList({
-            view: view,
-        listItemCreatedFunction: function(event) {
-          const item = event.item;
-          if (item.layer.type != "group") { // don't show legend twice
-            item.panel = {
-              content: "legend",
-              open: true
-            };
-          }
         }
-          }),
-          expanded: false
-        });
-        view.ui.add(legendListExpand, "top-left");
+    });
+}
 
-        // add a legend/List to second view
-          const legendListExpand2 = new Expand({
-        //collapsedIconClass: "esri-icon-collection",
-          expandIconClass: "esri-icon-collection",
-          expandTooltip: "Legend",
-          view: view2,
-          content: new LayerList({
-            view: view2,
-        listItemCreatedFunction: function(event) {
-          const item = event.item;
-          if (item.layer.type != "group") { // don't show legend twice
-            item.panel = {
-              content: "legend",
-              open: true
-            };
-          }
-        }
-          }),
-          expanded: false
-        });
-        view2.ui.add(legendListExpand2, "top-left");
+        // Create legends for each map view
+        createLegend(view, "legendDiv1");
+        createLegend(view2, "legendDiv2");
+        createLegend(view3, "legendDiv3");
+
 
         //sync the two maps when scrolling/zooming/etc
-        const views = [view, view2];
+        const views = [view, view2, view3];
         let active;
 
         const sync = (source) => {
@@ -404,9 +403,17 @@ popupTemplate: {
     <div id="header" style="display: table; height: 15px; overflow: hidden;">
         <h1 style="vertical-align: middle">Mapping Columbus: Exploring Income Disparities and Commuting Trends</h1>
     </div>
-    <div class="titleDiv">Median Incomes and Public Bus Access</div>
-    <div class="titleDiv">Self-Drivers vs. Public Bus Commuters</div>
-    <div id="viewDiv"></div>
-    <div id="viewDiv2"></div>
+    <div id="mainDiv">
+        <div id="leftDiv"></div>
+        <div id="centerDiv">
+            <div class="titleDiv">Median Incomes and Public Bus Access</div>
+            <div id="viewDiv"></div>
+        </div>
+        <div id="rightDiv">
+            <div class="titleDiv">Bus Commuters (top) vs Self-Drivers (bottom)</div>
+            <div id="viewDiv2"></div>
+            <div id="viewDiv3"></div>
+        </div>
+    </div>
 </body>
 </html>
